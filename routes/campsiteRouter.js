@@ -8,7 +8,8 @@ const campsiteRouter = express.Router();
 // updated endpoints to interact w/ mongodb server thru mongoose model methods
 campsiteRouter.route('/')
     .get((req, res, next) => {
-        Campsite.find() // static method via campsite model
+        Campsite.find() // static mongoose method via campsite model that finds all documents
+        // a mongoose method will always return a promise
             .then(campsites => {
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');

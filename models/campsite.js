@@ -1,11 +1,15 @@
 // schema
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema; // defining Schema to use the Schema object
 
+// defines Schema type
 require('mongoose-currency').loadType(mongoose);
+// middleware "Currency"
 const Currency = mongoose.Types.Currency;
 
+// creating new instance of the Schema object
 const commentSchema = new Schema({
+    // JS Object Notation (JSON) is a data structure that contains a "key: value pair"
     rating: {
         type: Number,
         min: 1,
@@ -51,10 +55,12 @@ const campsiteSchema = new Schema({
         type: Boolean,
         default: false
     },
+    // Sub-document | Campsites can have multiple comments
     comments: [commentSchema]
-}, {
-    timestamps: true // causes mongoose to add 'createdAt' and 'updatedAt'
-});
+},
+    {
+        timestamps: true // causes mongoose to add 'createdAt' and 'updatedAt'
+    });
 
 // model - first arg always capitalized & singular 
 const Campsite = mongoose.model('Campsite', campsiteSchema);
