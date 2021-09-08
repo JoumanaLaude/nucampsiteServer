@@ -1,13 +1,9 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path'); // core module built with nodejs
-var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-const session = require('express-session');
-const FileStore = require('session-file-store')(session);
 const passport = require('passport');
-const authenticate = require('./authenticate');
-
+const config = require('./config'); // replaced authentication
 
 // importing route files | from current working director > routes folder > file name
 var indexRouter = require('./routes/index');
@@ -20,7 +16,7 @@ const partnerRouter = require('./routes/partnerRouter');
 // without this middleware, our express application can't interect with our mongodb
 const mongoose = require('mongoose');
 
-const url = 'mongodb://localhost:27017/nucampsite';
+const url = config.mongoUrl; // mongoUrl we set up in config.js
 const connect = mongoose.connect(url, {
   useCreateIndex: true,
   useFindAndModify: false,
@@ -44,34 +40,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 // app.use(cookieParser('133-221-333-123-111')); | conflicts with express sessions since it has its own cookie implementation
 
-app.use(session({
-  name: 'session-id',
-  secret: '133-221-333-123-111',
-  saveUninitialized: false, // prevents empty sessions cookies
-  resave: false, // won't continue to be resaved whenever a req is made for that session
-  store: new FileStore() // saving to hard disk instead of application memory
-}));
-
 //checking if there's an existing session for client, if so session data is loaded
 app.use(passport.initialize());
-app.use(passport.session());
 
 // lets users access auth so they can create account
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
-function auth(req, res, next) {
-  console.log(req.user);
-  if (!req.user.user) {
-    const err = new Error('You are not authenticated!');
-    err.status = 401;
-    return next(err);
-  } else {
-    return next();
-  }
-}
-
-app.use(auth);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
