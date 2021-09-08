@@ -5,7 +5,9 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
-// the required function is returning another function as its return value, and we're calling that return func
+const passport = require('passport');
+const authenticate = require('./authenticate');
+
 
 // importing route files | from current working director > routes folder > file name
 var indexRouter = require('./routes/index');
@@ -50,26 +52,23 @@ app.use(session({
   store: new FileStore() // saving to hard disk instead of application memory
 }));
 
+//checking if there's an existing session for client, if so session data is loaded
+app.use(passport.initialize());
+app.use(passport.session());
+
 // lets users access auth so they can create account
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 function auth(req, res, next) {
-    console.log(req.session);
-
-    if (!req.session.user) {
-        const err = new Error('You are not authenticated!');
-        err.status = 401;
-        return next(err);
-    } else {
-        if (req.session.user === 'authenticated') {
-            return next();
-        } else {
-            const err = new Error('You are not authenticated! >:(');
-            err.status = 401;
-            return next(err);
-        }
-    }
+  console.log(req.user);
+  if (!req.user.user) {
+    const err = new Error('You are not authenticated!');
+    err.status = 401;
+    return next(err);
+  } else {
+    return next();
+  }
 }
 
 app.use(auth);
