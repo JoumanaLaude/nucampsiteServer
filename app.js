@@ -1,5 +1,6 @@
 var createError = require('http-errors');
 var express = require('express');
+
 var path = require('path'); // core module built with nodejs
 var logger = require('morgan');
 const passport = require('passport');
@@ -11,6 +12,7 @@ var usersRouter = require('./routes/users');
 const campsiteRouter = require('./routes/campsiteRouter');
 const promotionRouter = require('./routes/promotionRouter');
 const partnerRouter = require('./routes/partnerRouter');
+const uploadRouter = require('./routes/uploadRouter');
 
 // we use mongoose to manipulate (CRUD) our mongodb database
 // without this middleware, our express application can't interect with our mongodb
@@ -29,6 +31,16 @@ connect.then(() => console.log('Connected correctly to server'),
 );
 
 var app = express();
+
+// Secure traffic only
+app.all('*', (req, res, next) => { // * wildcard that catches every request / like css *
+  if (req.secure) { // check if https
+    return next();
+  } else {
+      console.log(`Redirecting to: https://${req.hostname}:${app.get('secPort')}${req.url}`);
+      res.redirect(301, `https://${req.hostname}:${app.get('secPort')}${req.url}`);
+  }
+});
 
 // view engine setup
 // this lets express know where your static files are for serving routes
@@ -52,6 +64,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/campsites', campsiteRouter);
 app.use('/promotions', promotionRouter);
 app.use('/partners', partnerRouter);
+app.use('/imageUpload', uploadRouter);
 
 app.use(function (req, res, next) {
   next(createError(404));
